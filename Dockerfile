@@ -1,4 +1,4 @@
-FROM usgswma/python:3.7
+FROM usgswma/python:3.8
 
 RUN apt-get install -y curl
 
