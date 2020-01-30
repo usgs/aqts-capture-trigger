@@ -1,0 +1,20 @@
+service: aqts-capture-state-machine
+
+provider:
+  name: aws
+  region: us-west-2
+  deploymentBucket:
+    name: iow-cloud-applications
+  stackTags:
+    "wma:applicationId": "Aquarius TS Capture State Machine"
+    "wma:contact": "Andrew Yan ayan@usgs.gov"
+    "wma:environment": test
+    taggingVersion: 0.0.1
+    "wma:costCenter": TBD
+
+custom:
+  accountNumber: ${ssm:/iow/aws/accountNumber}
+  deployStage: ${opt:stage, test}
+
+plugins:
+  - serverless-python-requirements
