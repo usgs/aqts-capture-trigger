@@ -1,12 +1,13 @@
-service: aqts-capture-state-machine
+service: aqts-capture-trigger
 
 provider:
   name: aws
   region: us-west-2
+  stage: ${opt:stage, test}
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
-    "wma:applicationId": "Aquarius TS Capture State Machine"
+    "wma:applicationId": "Aquarius TS Capture Trigger"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
     "wma:environment": test
     taggingVersion: 0.0.1
@@ -14,7 +15,59 @@ provider:
 
 custom:
   accountNumber: ${ssm:/iow/aws/accountNumber}
-  deployStage: ${opt:stage, test}
+
+functions:
+  aqtsCaptureTrigger:
+    handler: trigger.handler.lambda_handler
+    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    onError:
+      Fn::GetAtt:
+        - SNSTopicDeadLetterQueue
+        - Arn
+    events:
+      - s3:
+          bucket: triggering
+          event: s3:ObjectCreated:Put
+    environment:
+      STATE_MACHINE_ARN: arn:aws:states:us-west-2:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+      AWS_DEPLOYMENT_REGION: ${self:provider.region}
+
+resources:
+  Resources:
+    deadLetterQueue:
+      Type: AWS::SNS::Topic
+      DisplayName: aqts-trigger-sns-dlq-${self:provider.stage}
+      TopicName: aqts-trigger-sns-dlq-${self:provider.stage}
+    S3BucketTriggering:
+      Type: AWS::S3::Bucket
+      Properties:
+        BucketName: iow-retriever-capture-${self:provider.stage}
+        AccessControl: Private
+        LifecycleConfiguration:
+          Rules:
+            - ExpiriationInDays: 1
+              Status: Enabled
+    AqtsCaptureTriggerPermissionTriggeringS3:
+      Type: AWS::Lambda::Permission
+      Properties:
+        FunctionName:
+          Fn::GetAtt:
+            - AqtsCaptureTriggerLambdaFunction
+            - Arn
+          Principal: s3.amazon.com
+          Action: lambda:InvokeFunction
+          SourceAccount:
+            Ref: AWS::AcountId
+          SourceArn: arn:aws:s3:::iow-retriever-capture-${self:provider.stage}
 
 plugins:
   - serverless-python-requirements
+
+package:
+  exclude:
+    - node_modules/**
+    - Dockerfile
+    - .dockerignore
+    - Jenkinsfile
+    - package.json
+    - package-lock.json
