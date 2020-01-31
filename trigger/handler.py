@@ -9,6 +9,10 @@ logger = logging.getLogger()
 logger.setLevel(logging.DEBUG)
 
 
+def serialize_datetime(dt):
+    return dt.isoformat()
+
+
 def lambda_handler(event, context):
     logger.info(f'Event: {event}')
     logger.info(f'Context: {context}')
@@ -23,4 +27,4 @@ def lambda_handler(event, context):
         region=region
     )
     logger.info(f'State Machine Response: {resp}')
-    return resp
+    return json.loads(json.dumps(resp, default=serialize_datetime))
