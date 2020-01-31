@@ -26,7 +26,7 @@ functions:
       Ref: deadLetterQueue
     events:
       - s3:
-          bucket: "triggering"
+          bucket: S3BucketTriggering
           event: s3:ObjectCreated:Put
     environment:
       STATE_MACHINE_ARN: arn:aws:states:us-west-2:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
