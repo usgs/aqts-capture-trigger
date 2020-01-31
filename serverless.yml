@@ -28,6 +28,8 @@ functions:
       - s3:
           bucket: "triggering"
           event: s3:ObjectCreated:Put
+          rules:
+            - suffix: .json
     environment:
       STATE_MACHINE_ARN: arn:aws:states:us-west-2:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
@@ -48,7 +50,7 @@ resources:
           Rules:
             - ExpirationInDays: 1
               Status: Enabled
-    AqtsCaptureTriggerPermissionTriggeringS3:
+    AqtsCaptureTriggerLambdaPermissionTriggeringS3:
       Type: 'AWS::Lambda::Permission'
       Properties:
         FunctionName:
