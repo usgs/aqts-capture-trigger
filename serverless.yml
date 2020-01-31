@@ -2,16 +2,16 @@ service: aqts-capture-trigger
 
 provider:
   name: aws
-  region: us-west-2
-  stage: ${opt:stage, test}
+  region: 'us-west-2'
+  stage: ${opt:stage, 'test'}
   runtime: python3.7
-  memorySize: 64
+  memorySize: 128
   deploymentBucket:
     name: iow-cloud-applications
   stackTags:
     "wma:applicationId": "Aquarius TS Capture Trigger"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
-    "wma:environment": test
+    "wma:environment": "test"
     taggingVersion: 0.0.1
     "wma:costCenter": TBD
 
@@ -23,12 +23,10 @@ functions:
     handler: trigger.handler.lambda_handler
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     onError:
-      Fn::GetAtt:
-        - SNSTopicDeadLetterQueue
-        - Arn
+      Ref: deadLetterQueue
     events:
       - s3:
-          bucket: triggering
+          bucket: "triggering"
           event: s3:ObjectCreated:Put
     environment:
       STATE_MACHINE_ARN: arn:aws:states:us-west-2:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
@@ -38,8 +36,9 @@ resources:
   Resources:
     deadLetterQueue:
       Type: AWS::SNS::Topic
-      DisplayName: aqts-trigger-sns-dlq-${self:provider.stage}
-      TopicName: aqts-trigger-sns-dlq-${self:provider.stage}
+      Properties:
+        DisplayName: aqts-trigger-sns-dlq-${self:provider.stage}
+        TopicName: aqts-trigger-sns-dlq-${self:provider.stage}
     S3BucketTriggering:
       Type: AWS::S3::Bucket
       Properties:
@@ -47,20 +46,20 @@ resources:
         AccessControl: Private
         LifecycleConfiguration:
           Rules:
-            - ExpiriationInDays: 1
+            - ExpirationInDays: 1
               Status: Enabled
     AqtsCaptureTriggerPermissionTriggeringS3:
-      Type: AWS::Lambda::Permission
+      Type: 'AWS::Lambda::Permission'
       Properties:
         FunctionName:
-          Fn::GetAtt:
+          'Fn::GetAtt':
             - AqtsCaptureTriggerLambdaFunction
             - Arn
-          Principal: s3.amazon.com
-          Action: lambda:InvokeFunction
-          SourceAccount:
-            Ref: AWS::AcountId
-          SourceArn: arn:aws:s3:::iow-retriever-capture-${self:provider.stage}
+        Principal: 's3.amazonaws.com'
+        Action: 'lambda:InvokeFunction'
+        SourceAccount:
+          Ref: AWS::AccountId
+        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:provider.stage}
 
 plugins:
   - serverless-python-requirements
