@@ -65,7 +65,7 @@ resources:
         Action: 'lambda:InvokeFunction'
         SourceAccount:
           Ref: AWS::AccountId
-        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:provider.stage}
+        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
 
 plugins:
   - serverless-python-requirements
