@@ -17,6 +17,10 @@ provider:
 
 custom:
   accountNumber: ${ssm:/iow/aws/accountNumber}
+  environments:
+    TEST: test
+    QA: qa
+    PROD-EXTERNAL: prod-external
 
 functions:
   aqtsCaptureTrigger:
@@ -44,7 +48,7 @@ resources:
     S3BucketTriggering:
       Type: AWS::S3::Bucket
       Properties:
-        BucketName: iow-retriever-capture-${self:provider.stage}
+        BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
         AccessControl: Private
         LifecycleConfiguration:
           Rules:
