@@ -12,7 +12,7 @@ provider:
     "wma:applicationId": "Aquarius TS Capture Trigger"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
     "wma:environment": "test"
-    taggingVersion: 0.0.1
+    "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
 
 custom:
