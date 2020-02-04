@@ -3,7 +3,7 @@ service: aqts-capture-trigger
 provider:
   name: aws
   region: 'us-west-2'
-  stage: ${opt:stage, 'test'}
+  stage: ${opt:stage, 'TEST'}
   runtime: python3.8
   memorySize: 128
   deploymentBucket:
