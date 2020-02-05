@@ -27,18 +27,28 @@ class TestLambdaHandler(TestCase):
     def setUp(self):
         self.event = {
             'Records': [{'eventSource': 's3'}]
-        },
+        }
+        self.event_two = {
+            'Records': [{'eventSource': 's3'}, {'eventSource': 's3_2'}]
+        }
         self.context = {'context': '???'}
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
     @mock.patch('trigger.handler.execute_state_machine')
-    def test_lambda_handler(self, mock_esm):
+    def test_single_record(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 40)}
         result = lambda_handler(self.event, self.context)
-        expected_result = {'spam': 'eggs', 'startDate': '2020-01-01T19:25:40'}
+        expected_result = {'Responses': [{'spam': 'eggs', 'startDate': '2020-01-01T19:25:40'}]}
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload=json.dumps(self.event),
+            invocation_payload=json.dumps({'Record': self.event['Records'][0]}),
             region=self.region
         )
-        self.assertEqual(result, expected_result)
+        self.assertDictEqual(result, expected_result)
+
+    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
+    @mock.patch('trigger.handler.execute_state_machine')
+    def test_two_records(self, mock_esm):
+        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 50)}
+        lambda_handler(self.event_two, self.context)
+        self.assertEqual(mock_esm.call_count, 2)
