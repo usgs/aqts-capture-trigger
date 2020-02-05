@@ -20,11 +20,15 @@ def lambda_handler(event, context):
     state_machine_arn = os.getenv('STATE_MACHINE_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
 
-    payload = json.dumps(event)
-    resp = execute_state_machine(
-        state_machine_arn=state_machine_arn,
-        invocation_payload=payload,
-        region=region
-    )
-    logger.info(f'State Machine Response: {resp}')
-    return json.loads(json.dumps(resp, default=serialize_datetime))
+    responses = []
+    for record in event['Records']:
+        raw_payload = {'Record': record}
+        payload = json.dumps(raw_payload)
+        resp = execute_state_machine(
+            state_machine_arn=state_machine_arn,
+            invocation_payload=payload,
+            region=region
+        )
+        responses.append(resp)
+        logger.info(f'State Machine Response: {resp}')
+    return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
