@@ -15,6 +15,7 @@ provider:
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
+    commitIdentifier: ${git:sha1}
 
 custom:
   accountNumber: ${ssm:/iow/aws/accountNumber}
@@ -74,6 +75,7 @@ resources:
 
 plugins:
   - serverless-python-requirements
+  - serverless-plugin-git-variables
 
 package:
   exclude:
