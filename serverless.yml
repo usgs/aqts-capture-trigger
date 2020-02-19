@@ -74,8 +74,8 @@ resources:
         SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
 
 plugins:
-  - serverless-python-requirements
   - serverless-plugin-git-variables
+  - serverless-python-requirements
 
 package:
   exclude:
