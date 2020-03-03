@@ -40,8 +40,9 @@ functions:
           event: s3:ObjectCreated:Put
           rules:
             - suffix: .json
+      - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.accountNumber}:aqts-capture-error-queue-${self:provider.stage}.fifo
     environment:
-      STATE_MACHINE_ARN: arn:aws:states:us-west-2:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
