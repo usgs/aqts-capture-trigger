@@ -22,8 +22,14 @@ def lambda_handler(event, context):
 
     responses = []
     for record in event['Records']:
-        raw_payload = {'Record': record}
-        payload = json.dumps(raw_payload)
+        event_source = record['eventSource']
+        if event_source == 'aws:s3':
+            raw_payload = {'Record': record}
+            payload = json.dumps(raw_payload)
+        elif event_source == 'aws:sqs':
+            payload = record['body']
+        else:
+            raise TypeError(f'Unsupported Event Source Found: {event_source}')
         resp = execute_state_machine(
             state_machine_arn=state_machine_arn,
             invocation_payload=payload,
