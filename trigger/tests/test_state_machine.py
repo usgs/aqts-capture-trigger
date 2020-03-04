@@ -1,5 +1,5 @@
 """
-Tests for the state_machine module
+Tests for the state_machine module.
 
 """
 import json
