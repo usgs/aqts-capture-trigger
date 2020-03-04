@@ -47,7 +47,7 @@ class TestLambdaHandler(TestCase):
         expected_result = {'Responses': [{'spam': 'eggs', 'startDate': '2020-01-01T19:25:40'}]}
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload=json.dumps({'Record': self.s3_event['Records'][0]}),
+            invocation_payload=json.dumps({'Record': self.s3_event['Records'][0], 'resumeState': None}),
             region=self.region
         )
         self.assertDictEqual(result, expected_result)

@@ -24,7 +24,7 @@ def lambda_handler(event, context):
     for record in event['Records']:
         event_source = record['eventSource']
         if event_source == 'aws:s3':
-            raw_payload = {'Record': record}
+            raw_payload = {'Record': record, 'resumeState': None}
             payload = json.dumps(raw_payload)
         elif event_source == 'aws:sqs':
             payload = record['body']
