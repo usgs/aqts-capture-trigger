@@ -1,5 +1,5 @@
 {
-  "name": "Aquarius TS Capture Trigger",
+  "name": "aquarius-ts-capture-trigger",
   "description": "Deployment via serverless",
   "dependencies": {
     "serverless": "^1.65.0",
