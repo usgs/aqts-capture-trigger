@@ -40,7 +40,7 @@ class TestLambdaHandler(TestCase):
         self.context = {'context': '???'}
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
-    @mock.patch('trigger.handler.execute_state_machine')
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     def test_single_s3_record(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 40)}
         result = lambda_handler(self.s3_event, self.context)
@@ -53,14 +53,14 @@ class TestLambdaHandler(TestCase):
         self.assertDictEqual(result, expected_result)
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
-    @mock.patch('trigger.handler.execute_state_machine')
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     def test_two_s3_records(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 50)}
         lambda_handler(self.s3_event_two, self.context)
         self.assertEqual(mock_esm.call_count, 2)
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
-    @mock.patch('trigger.handler.execute_state_machine')
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     def test_sqs_record(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 31, 21)}
         lambda_handler(self.sqs_event, self.context)
