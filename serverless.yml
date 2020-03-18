@@ -33,7 +33,7 @@ functions:
     handler: trigger.handler.lambda_handler
     role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
     onError:
-      Ref: deadLetterQueue
+      Ref: snsTopic
     events:
       - s3:
           bucket: "triggering"
@@ -48,11 +48,47 @@ functions:
 
 resources:
   Resources:
-    deadLetterQueue:
+    snsTopic:
       Type: AWS::SNS::Topic
       Properties:
-        DisplayName: aqts-trigger-sns-dlq-${self:provider.stage}
-        TopicName: aqts-trigger-sns-dlq-${self:provider.stage}
+        DisplayName: ${self:service}-${self:provider.stage}-topic
+        TopicName: ${self:service}-${self:provider.stage}-topic
+    concurrencyAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-concurrency-alarm
+        AlarmDescription: Notify when concurrency exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: AqtsCaptureTriggerLambdaFunction
+        MetricName: ConcurrentExecutions
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 230
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
+    errorAlarm:
+      Type: AWS::CloudWatch::Alarm
+      Properties:
+        AlarmName: ${self:service}-${self:provider.stage}-error-alarm
+        AlarmDescription: Notify when number of errors exceeds the specified threshold
+        Namespace: 'AWS/Lambda'
+        Dimensions:
+          - Name: FunctionName
+            Value:
+              Ref: AqtsCaptureTriggerLambdaFunction
+        MetricName: Errors
+        Statistic: Sum
+        ComparisonOperator: GreaterThanOrEqualToThreshold
+        Threshold: 10
+        Period: 60
+        EvaluationPeriods: 1
+        AlarmActions:
+          - Ref: snsTopic
     S3BucketTriggering:
       Type: AWS::S3::Bucket
       Properties:
