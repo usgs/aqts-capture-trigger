@@ -21,20 +21,30 @@ def lambda_handler(event, context):
     region = os.getenv('AWS_DEPLOYMENT_REGION')
 
     responses = []
-    for record in event['Records']:
-        event_source = record['eventSource']
-        if event_source == 'aws:s3':
-            raw_payload = {'Record': record, 'resumeState': None}
-            payload = json.dumps(raw_payload)
-        elif event_source == 'aws:sqs':
-            payload = record['body']
-        else:
-            raise TypeError(f'Unsupported Event Source Found: {event_source}')
+
+    def process_individual_payload(individual_payload):
         resp = execute_state_machine(
             state_machine_arn=state_machine_arn,
-            invocation_payload=payload,
+            invocation_payload=individual_payload,
             region=region
         )
         responses.append(resp)
         logger.info(f'State Machine Response: {resp}')
+
+    for record in event['Records']:
+        event_source = record['eventSource']
+        if event_source == 'aws:sqs':
+            body = record['body']
+            parsed_body = json.loads(body)
+            if 'stepFunctionFails' not in parsed_body.keys():
+                s3_records = json.loads(record['body'])
+                for s3_record in s3_records['Records']:
+                    raw_payload = {'Record': s3_record, 'resumeState': None}
+                    payload = json.dumps(raw_payload)
+                    process_individual_payload(payload)
+            else:
+                payload = body
+                process_individual_payload(payload)
+        else:
+            raise TypeError(f'Unsupported Event Source Found: {event_source}')
     return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
