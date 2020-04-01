@@ -118,6 +118,7 @@ resources:
       Properties:
         QueueName: aqts-capture-trigger-queue-${self:provider.stage}
         MessageRetentionPeriod: 172800
+        VisibilityTimeout: 36  # set to six-times the lambda timeout mitigate concurrency issues; serverless defaults to 6 seconds
     triggerQueuePolicy:
       Type: AWS::SQS::QueuePolicy
       Properties:
