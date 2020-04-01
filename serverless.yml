@@ -64,7 +64,7 @@ resources:
             Value:
               Ref: AqtsCaptureTriggerLambdaFunction
         MetricName: ConcurrentExecutions
-        Statistic: Sum
+        Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
         Threshold: 230
         Period: 60
