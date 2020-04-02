@@ -41,6 +41,7 @@ functions:
             Fn::GetAtt:
               - triggerQueue
               - Arn
+    reservedConcurrency: 100
     environment:
       STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
@@ -66,7 +67,7 @@ resources:
         MetricName: ConcurrentExecutions
         Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 230
+        Threshold: 90
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
