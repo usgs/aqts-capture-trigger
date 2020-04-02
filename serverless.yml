@@ -35,12 +35,13 @@ functions:
     onError:
       Ref: snsTopic
     events:
-      - s3:
-          bucket: "triggering"
-          event: s3:ObjectCreated:Put
-          rules:
-            - suffix: .json
       - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.accountNumber}:aqts-capture-error-queue-${self:provider.stage}.fifo
+      - sqs:
+          arn:
+            Fn::GetAtt:
+              - triggerQueue
+              - Arn
+    reservedConcurrency: 100
     environment:
       STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
@@ -64,9 +65,9 @@ resources:
             Value:
               Ref: AqtsCaptureTriggerLambdaFunction
         MetricName: ConcurrentExecutions
-        Statistic: Sum
+        Statistic: Maximum
         ComparisonOperator: GreaterThanOrEqualToThreshold
-        Threshold: 230
+        Threshold: 90
         Period: 60
         EvaluationPeriods: 1
         AlarmActions:
@@ -91,25 +92,52 @@ resources:
           - Ref: snsTopic
     S3BucketTriggering:
       Type: AWS::S3::Bucket
+      DependsOn:
+        - triggerQueue
+        - triggerQueuePolicy
       Properties:
         BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
         AccessControl: Private
         LifecycleConfiguration:
           Rules:
-            - ExpirationInDays: 1
+            - ExpirationInDays: 4
               Status: Enabled
-    AqtsCaptureTriggerLambdaPermissionTriggeringS3:
-      Type: 'AWS::Lambda::Permission'
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:Put
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: suffix
+                      Value: .json
+              Queue:
+                Fn::GetAtt:
+                  - triggerQueue
+                  - Arn
+    triggerQueue:
+      Type: AWS::SQS::Queue
       Properties:
-        FunctionName:
-          'Fn::GetAtt':
-            - AqtsCaptureTriggerLambdaFunction
-            - Arn
-        Principal: 's3.amazonaws.com'
-        Action: 'lambda:InvokeFunction'
-        SourceAccount:
-          Ref: AWS::AccountId
-        SourceArn: arn:aws:s3:::iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+        QueueName: aqts-capture-trigger-queue-${self:provider.stage}
+        MessageRetentionPeriod: 345600
+        VisibilityTimeout: 36  # set to six-times the lambda timeout mitigate concurrency issues; serverless defaults to 6 seconds
+    triggerQueuePolicy:
+      Type: AWS::SQS::QueuePolicy
+      Properties:
+        Queues:
+          - Ref: triggerQueue
+        PolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal: '*'  # restricting this to the account causes a failure when the S3 bucket tries to verify in can reach the queue.
+              Action: 'SQS:SendMessage'
+              Resource:
+                Fn::GetAtt:
+                  - triggerQueue
+                  - Arn
+              Condition:
+                ArnLike:
+                  aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName}
 
 plugins:
   - serverless-plugin-git-variables

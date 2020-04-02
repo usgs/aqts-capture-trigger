@@ -3,7 +3,6 @@ Tests for the AWS Lambda handler.
 
 """
 import datetime
-import json
 from unittest import TestCase, mock
 
 from ..handler import lambda_handler, serialize_datetime
@@ -25,14 +24,33 @@ class TestLambdaHandler(TestCase):
     region = 'us-south-19'
 
     def setUp(self):
-        self.s3_event = {
-            'Records': [{'eventSource': 'aws:s3'}]
-        }
-        self.s3_event_two = {
-            'Records': [{'eventSource': 'aws:s3'}, {'eventSource': 'aws:s3'}]
-        }
         self.sqs_event = {
-            'Records': [{'eventSource': 'aws:sqs', 'body': '{"some": "garbage"}'}]
+            'Records': [
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"Records": [{"eventSource": "s3", "eventTime": "2020-02-17T12:39Z"}]}'
+                }
+            ]
+        }
+        self.sqs_event_two = {
+            'Records': [
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"Records": [{"eventSource": "s3", "eventTime": "2020-02-17T12:39Z"}, {"eventSource": "s3", "eventTime": "2020-02-17T12:40Z"}]}'
+                },
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"Records": [{"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, {"eventSource": "s3", "eventTime": "2020-02-18T22:00Z"}]}'
+                }
+            ]
+        }
+        self.sqs_error_event = {
+            'Records': [
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}'
+                }
+            ]
         }
         self.other_event = {
             'Records': [{'eventSource': 'aws:blah'}]
@@ -41,32 +59,30 @@ class TestLambdaHandler(TestCase):
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
-    def test_single_s3_record(self, mock_esm):
-        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 40)}
-        result = lambda_handler(self.s3_event, self.context)
-        expected_result = {'Responses': [{'spam': 'eggs', 'startDate': '2020-01-01T19:25:40'}]}
-        mock_esm.assert_called_with(
-            state_machine_arn=self.state_machine_arn,
-            invocation_payload=json.dumps({'Record': self.s3_event['Records'][0], 'resumeState': None}),
-            region=self.region
-        )
-        self.assertDictEqual(result, expected_result)
-
-    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
-    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
-    def test_two_s3_records(self, mock_esm):
-        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 25, 50)}
-        lambda_handler(self.s3_event_two, self.context)
-        self.assertEqual(mock_esm.call_count, 2)
-
-    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
-    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     def test_sqs_record(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 1, 1, 19, 31, 21)}
         lambda_handler(self.sqs_event, self.context)
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload='{"some": "garbage"}',
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-17T12:39Z"}, "resumeState": null}',
+            region=self.region
+        )
+
+    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
+    def test_two_sqs_records(self, mock_esm):
+        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 00, 41)}
+        lambda_handler(self.sqs_event_two, self.context)
+        self.assertEqual(mock_esm.call_count, 4)
+
+    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
+    def test_error_path(self, mock_esm):
+        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 1, 9)}
+        lambda_handler(self.sqs_error_event, self.context)
+        mock_esm.assert_called_with(
+            state_machine_arn=self.state_machine_arn,
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
             region=self.region
         )
 
