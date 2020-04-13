@@ -48,7 +48,8 @@ class TestLambdaHandler(TestCase):
             'Records': [
                 {
                     'eventSource': 'aws:sqs',
-                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}'
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
+                    'attributes': {'MessageGroupId': 'step_function_error'}
                 }
             ]
         }
@@ -56,7 +57,8 @@ class TestLambdaHandler(TestCase):
             'Records': [
                 {
                     'eventSource': 'aws:sqs',
-                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}'
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}',
+                    'attributes': {'MessageGroupId': 'step_function_error'}
                 }
             ]
         }
