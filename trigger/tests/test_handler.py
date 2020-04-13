@@ -52,6 +52,14 @@ class TestLambdaHandler(TestCase):
                 }
             ]
         }
+        self.sqs_error_event_initial_client_error = {
+            'Records': [
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}'
+                }
+            ]
+        }
         self.other_event = {
             'Records': [{'eventSource': 'aws:blah'}]
         }
@@ -83,6 +91,21 @@ class TestLambdaHandler(TestCase):
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
             invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
+            region=self.region
+        )
+
+    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
+    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
+    def test_error_where_input_is_the_original(self, mock_esm):
+        """
+        Test the case where there's a errorHandler reports ClientError on the initial execution.
+
+        """
+        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 1, 9)}
+        lambda_handler(self.sqs_error_event_initial_client_error, self.context)
+        mock_esm.assert_called_with(
+            state_machine_arn=self.state_machine_arn,
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}',
             region=self.region
         )
 
