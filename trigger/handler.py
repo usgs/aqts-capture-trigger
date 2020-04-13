@@ -36,7 +36,9 @@ def lambda_handler(event, context):
         if event_source == 'aws:sqs':
             body = record['body']
             parsed_body = json.loads(body)
-            if 'stepFunctionFails' not in parsed_body.keys():
+            # handle things are coming through for the first time (i.e. they haven't failed before)
+            # If they haven't been through before, they will have a `Records` key.
+            if 'Record' not in parsed_body.keys():
                 s3_records = json.loads(record['body'])
                 for s3_record in s3_records['Records']:
                     raw_payload = {'Record': s3_record, 'resumeState': None}
