@@ -50,6 +50,11 @@ class TestLambdaHandler(TestCase):
                     'eventSource': 'aws:sqs',
                     'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
                     'attributes': {'MessageGroupId': 'step_function_error'}
+                },
+                {
+                    'eventSource': 'aws:sqs',
+                    'body': '{"id": 74205, "type": "correctedData", "resumeState": "someOtherState", "stepFunctionFails": 1}',
+                    'attributes': {'MessageGroupId': 'step_function_error'}
                 }
             ]
         }
@@ -90,11 +95,18 @@ class TestLambdaHandler(TestCase):
     def test_error_path(self, mock_esm):
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 1, 9)}
         lambda_handler(self.sqs_error_event, self.context)
-        mock_esm.assert_called_with(
-            state_machine_arn=self.state_machine_arn,
+        call_0 = mock.call(
+            state_machine_arn='arn:aws:states:us-south-19:389051134:stateMachine:MyStateMachine',
             invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
-            region=self.region
+            region='us-south-19'
         )
+        call_1 = mock.call(
+            state_machine_arn='arn:aws:states:us-south-19:389051134:stateMachine:MyStateMachine',
+            invocation_payload='{"id": 74205, "type": "correctedData", "resumeState": "someOtherState", "stepFunctionFails": 1}',
+            region='us-south-19'
+        )
+        calls = [call_0, call_1]
+        mock_esm.assert_has_calls(calls, any_order=True)
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
