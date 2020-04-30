@@ -41,7 +41,7 @@ functions:
             Fn::GetAtt:
               - triggerQueue
               - Arn
-    reservedConcurrency: 45
+    reservedConcurrency: 25
     environment:
       STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
