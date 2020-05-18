@@ -48,12 +48,12 @@ class TestLambdaHandler(TestCase):
             'Records': [
                 {
                     'eventSource': 'aws:sqs',
-                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "stepFunctionFails": 1}',
                     'attributes': {'MessageGroupId': 'step_function_error'}
                 },
                 {
                     'eventSource': 'aws:sqs',
-                    'body': '{"id": 74205, "type": "correctedData", "resumeState": "someOtherState", "stepFunctionFails": 1}',
+                    'body': '{"id": 74205, "type": "correctedData", "stepFunctionFails": 1}',
                     'attributes': {'MessageGroupId': 'step_function_error'}
                 }
             ]
@@ -62,7 +62,7 @@ class TestLambdaHandler(TestCase):
             'Records': [
                 {
                     'eventSource': 'aws:sqs',
-                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}',
+                    'body': '{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}}',
                     'attributes': {'MessageGroupId': 'step_function_error'}
                 }
             ]
@@ -79,7 +79,7 @@ class TestLambdaHandler(TestCase):
         lambda_handler(self.sqs_event, self.context)
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-17T12:39Z"}, "resumeState": null}',
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-17T12:39Z"}}',
             region=self.region
         )
 
@@ -97,12 +97,12 @@ class TestLambdaHandler(TestCase):
         lambda_handler(self.sqs_error_event, self.context)
         call_0 = mock.call(
             state_machine_arn='arn:aws:states:us-south-19:389051134:stateMachine:MyStateMachine',
-            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "someState", "stepFunctionFails": 1}',
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "stepFunctionFails": 1}',
             region='us-south-19'
         )
         call_1 = mock.call(
             state_machine_arn='arn:aws:states:us-south-19:389051134:stateMachine:MyStateMachine',
-            invocation_payload='{"id": 74205, "type": "correctedData", "resumeState": "someOtherState", "stepFunctionFails": 1}',
+            invocation_payload='{"id": 74205, "type": "correctedData", "stepFunctionFails": 1}',
             region='us-south-19'
         )
         calls = [call_0, call_1]
@@ -119,7 +119,7 @@ class TestLambdaHandler(TestCase):
         lambda_handler(self.sqs_error_event_initial_client_error, self.context)
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}, "resumeState": "null"}',
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-18T21:59Z"}}',
             region=self.region
         )
 
