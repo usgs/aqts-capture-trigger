@@ -111,10 +111,6 @@ class TestLambdaHandler(TestCase):
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region})
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     def test_error_where_input_is_the_original(self, mock_esm):
-        """
-        Test the case where there's a errorHandler reports ClientError on the initial execution.
-
-        """
         mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 1, 9)}
         lambda_handler(self.sqs_error_event_initial_client_error, self.context)
         mock_esm.assert_called_with(
