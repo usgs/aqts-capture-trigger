@@ -41,7 +41,7 @@ def lambda_handler(event, context):
             if message_grp_id != 'step_function_error':
                 s3_records = json.loads(body)
                 for s3_record in s3_records['Records']:
-                    raw_payload = {'Record': s3_record, 'resumeState': None}
+                    raw_payload = {'Record': s3_record}
                     payload = json.dumps(raw_payload)
                     process_individual_payload(payload)
             else:
