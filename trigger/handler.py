@@ -35,18 +35,19 @@ def lambda_handler(event, context):
         event_source = record['eventSource']
         if event_source == 'aws:sqs':
             body = record['body']
-            message_attrs = record.get('attributes', {})
-            message_grp_id = message_attrs.get('MessageGroupId', None)
-            # handle things are coming through for the first time (i.e. they haven't failed before)
-            if message_grp_id != 'step_function_error':
-                s3_records = json.loads(body)
-                for s3_record in s3_records['Records']:
+            s3_records = json.loads(body)
+            try:
+                s3_record_list = s3_records['Records']
+            except KeyError:
+                # retries from the error handler will run through this route
+                payload = body
+                process_individual_payload(payload)
+            else:
+                # handle things are coming through for the first time (i.e. they haven't failed before)
+                for s3_record in s3_record_list:
                     raw_payload = {'Record': s3_record}
                     payload = json.dumps(raw_payload)
                     process_individual_payload(payload)
-            else:
-                payload = body
-                process_individual_payload(payload)
         else:
             raise TypeError(f'Unsupported Event Source Found: {event_source}')
     return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
