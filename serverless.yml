@@ -35,7 +35,7 @@ functions:
     onError:
       Ref: snsTopic
     events:
-      - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.accountNumber}:aqts-capture-error-queue-${self:provider.stage}.fifo
+      - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.accountNumber}:aqts-capture-error-queue-${self:provider.stage}
       - sqs:
           arn:
             Fn::GetAtt:
