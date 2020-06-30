@@ -50,7 +50,7 @@ def lambda_handler(event, context):
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
                     s3_object_size = s3_record['s3']['object']['size']
-                    if s3_object_size < s3_object_size_limit:
+                    if int(s3_object_size) < s3_object_size_limit:
                         raw_payload = {'Record': s3_record}
                         payload = json.dumps(raw_payload)
                         process_individual_payload(payload)
