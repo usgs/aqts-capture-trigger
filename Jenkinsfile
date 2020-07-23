@@ -15,12 +15,14 @@ pipeline {
     stages {
         stage('run build the zip file for lambda') {
             agent {
-                dockerfile true
+                dockerfile {
+                    label 'team:iow'
+                }
             }
             steps {
                 sh '''
                 npm install
-                ./node_modules/serverless/bin/serverless deploy --stage ${DEPLOY_STAGE} --region us-west-2
+                ./node_modules/serverless/bin/serverless.js deploy --stage ${DEPLOY_STAGE} --region us-west-2
                 '''
             }
         }
