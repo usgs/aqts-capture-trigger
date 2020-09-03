@@ -19,6 +19,7 @@ provider:
     commitIdentifier: ${git:sha1}
 
 custom:
+  bucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
   exportGitVariables: false
   accountNumber: ${ssm:/iow/aws/accountNumber}
   vpc:
@@ -78,10 +79,10 @@ resources:
                     - s3:ListBucketMultipartUploads
                     - s3:PutObject
                   Resource:
-                    - { Fn::GetAtt: [ iow-retriever-capture-${self:custom.environments.${self:provider.stage}}, Arn ] }
+                    - { Fn::GetAtt: [ ${self:custom.bucketName}, Arn ] }
                     - Fn::Join:
                         - ""
-                        - - { Fn::GetAtt: [ iow-retriever-capture-${self:custom.environments.${self:provider.stage}}, Arn ] }
+                        - - { Fn::GetAtt: [ ${self:custom.bucketName}, Arn ] }
                           - "/*"
 
     snsTopic:
@@ -131,7 +132,7 @@ resources:
         - triggerQueue
         - triggerQueuePolicy
       Properties:
-        BucketName: iow-retriever-capture-${self:custom.environments.${self:provider.stage}}
+        BucketName: ${self:custom.bucketName}
         AccessControl: Private
         LifecycleConfiguration:
           Rules:
