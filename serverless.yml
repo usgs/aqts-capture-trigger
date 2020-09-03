@@ -79,10 +79,10 @@ resources:
                     - s3:ListBucketMultipartUploads
                     - s3:PutObject
                   Resource:
-                    - { Fn::GetAtt: [ ${self:custom.bucketName}, Arn ] }
+                    - { Fn::GetAtt: [ "${self:custom.bucketName}", Arn ] }
                     - Fn::Join:
                         - ""
-                        - - { Fn::GetAtt: [ ${self:custom.bucketName}, Arn ] }
+                        - - { Fn::GetAtt: [ "${self:custom.bucketName}", Arn ] }
                           - "/*"
 
     snsTopic:
