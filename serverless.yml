@@ -71,6 +71,7 @@ resources:
               Version: '2012-10-17'
               Statement:
                 - Effect: Allow
+                  Principal: '*'
                   Action:
                     - s3:AbortMultipartUpload
                     - s3:GetBucketLocation
@@ -79,11 +80,7 @@ resources:
                     - s3:ListBucketMultipartUploads
                     - s3:PutObject
                   Resource:
-                    - { Fn::GetAtt: [ "${self:custom.bucketName}", Arn ] }
-                    - Fn::Join:
-                        - ""
-                        - - { Fn::GetAtt: [ "${self:custom.bucketName}", Arn ] }
-                          - "/*"
+                    - arn:aws:s3:*:*:${self:custom.bucketName}
 
     snsTopic:
       Type: AWS::SNS::Topic
