@@ -51,6 +51,39 @@ functions:
 
 resources:
   Resources:
+    NwCaptureS3ToRDSTransferPolicy:
+      Type: AWS::IAM::Role
+      Properties:
+        AssumeRolePolicyDocument:
+          Version: '2012-10-17'
+          Statement:
+            - Effect: Allow
+              Principal:
+                Service:
+                  - rds.amazonaws.com
+              Action:
+                - sts:AssumeRole
+        Path: "/"
+        Policies:
+          - PolicyName: NwCaptureS3ToRDSTransferPolicy
+            PolicyDocument:
+              Version: '2012-10-17'
+              Statement:
+                - Effect: Allow
+                  Action:
+                    - s3:AbortMultipartUpload
+                    - s3:GetBucketLocation
+                    - s3:GetObject
+                    - s3:ListBucket
+                    - s3:ListBucketMultipartUploads
+                    - s3:PutObject
+                  Resource:
+                    - { Fn::GetAtt: [ iow-retriever-capture-${self:custom.environments.${self:provider.stage}}, Arn ] }
+                    - Fn::Join:
+                        - ""
+                        - - { Fn::GetAtt: [ iow-retriever-capture-${self:custom.environments.${self:provider.stage}}, Arn ] }
+                          - "/*"
+
     snsTopic:
       Type: AWS::SNS::Topic
       Properties:
