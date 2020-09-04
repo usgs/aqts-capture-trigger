@@ -71,6 +71,7 @@ resources:
               Version: '2012-10-17'
               Statement:
                 - Effect: Allow
+                  Principal: '*'
                   Action:
                     - s3:AbortMultipartUpload
                     - s3:GetBucketLocation
@@ -79,7 +80,8 @@ resources:
                     - s3:ListBucketMultipartUploads
                     - s3:PutObject
                   Resource:
-                    - arn:aws:s3:*:${self:custom.bucketName}
+                    - arn:aws:s3:::${self:custom.bucketName}
+                    - arn:aws:s3:::${self:custom.bucketName}/*
         PermissionsBoundary: arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
     snsTopic:
       Type: AWS::SNS::Topic
