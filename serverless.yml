@@ -64,8 +64,6 @@ resources:
                   - rds.amazonaws.com
               Action:
                 - sts:AssumeRole
-              Resource:
-                - Sub! arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
         Path: "/"
         Policies:
           - PolicyName: NwCaptureS3ToRDSTransferPolicy
@@ -83,6 +81,7 @@ resources:
                     - s3:PutObject
                   Resource:
                     - arn:aws:s3:*:*:${self:custom.bucketName}
+        PermissionBoundary: arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
 
     snsTopic:
       Type: AWS::SNS::Topic
