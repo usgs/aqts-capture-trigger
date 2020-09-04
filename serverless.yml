@@ -81,8 +81,7 @@ resources:
                     - s3:PutObject
                   Resource:
                     - arn:aws:s3:*:*:${self:custom.bucketName}
-        PermissionBoundary: arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
-
+        PermissionsBoundary: arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
     snsTopic:
       Type: AWS::SNS::Topic
       Properties:
