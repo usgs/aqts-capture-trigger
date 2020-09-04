@@ -79,7 +79,7 @@ resources:
                     - s3:ListBucketMultipartUploads
                     - s3:PutObject
                   Resource:
-                    - arn:aws:s3:*:*:${self:custom.bucketName}
+                    - arn:aws:s3:*:${self:custom.bucketName}
         PermissionsBoundary: arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
     snsTopic:
       Type: AWS::SNS::Topic
