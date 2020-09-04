@@ -59,11 +59,13 @@ resources:
           Version: '2012-10-17'
           Statement:
             - Effect: Allow
-              Principal: '*'
-              Service:
-                - rds.amazonaws.com
+              Principal:
+                Service:
+                  - rds.amazonaws.com
               Action:
                 - sts:AssumeRole
+              Resource:
+                - Sub! arn:aws:iam::${self:custom.accountNumber}:policy/csr-Developer-Permissions-Boundary
         Path: "/"
         Policies:
           - PolicyName: NwCaptureS3ToRDSTransferPolicy
