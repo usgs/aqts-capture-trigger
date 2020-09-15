@@ -32,14 +32,6 @@ class TestLambdaHandler(TestCase):
                 }
             ]
         }
-        self.sqs_event_big_s3_file = {
-            'Records': [
-                {
-                    'eventSource': 'aws:sqs',
-                    'body': '{"Records": [{"eventSource": "s3", "eventTime": "2020-02-17T12:39Z", "s3": {"object": {"size": 618000000}}}]}'
-                }
-            ]
-        }
         self.sqs_event_two = {
             'Records': [
                 {
@@ -115,12 +107,6 @@ class TestLambdaHandler(TestCase):
         )
         calls = [call_0, call_1]
         mock_esm.assert_has_calls(calls, any_order=True)
-
-    @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region, 'OBJECT_SIZE_LIMIT': str(10**7)})
-    @mock.patch('trigger.handler.execute_state_machine', autospec=True)
-    def test_big_files_do_not_trigger_step_function(self, mock_esm):
-        lambda_handler(self.sqs_event_big_s3_file, self.context)
-        mock_esm.assert_not_called()
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region, 'OBJECT_SIZE_LIMIT': str(10**7)})
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
