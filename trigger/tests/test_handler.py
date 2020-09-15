@@ -32,14 +32,6 @@ class TestLambdaHandler(TestCase):
                 }
             ]
         }
-        self.sqs_event_big_s3_file = {
-            'Records': [
-                {
-                    'eventSource': 'aws:sqs',
-                    'body': '{"Records": [{"eventSource": "s3", "eventTime": "2020-02-17T12:39Z", "s3": {"object": {"size": 618000000}}}]}'
-                }
-            ]
-        }
         self.sqs_event_two = {
             'Records': [
                 {
