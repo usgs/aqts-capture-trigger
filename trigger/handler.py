@@ -44,8 +44,12 @@ def lambda_handler(event, context):
                 s3_record_list = s3_records['Records']
             except KeyError:
                 # retries from the error handler will run through this route
-                payload = body
-                process_individual_payload(payload)
+                s3_object_size = body['Record']['s3']['object']['size']
+                if int(s3_object_size) < 1200:
+                    logger.info(f'Omitted the file because is probably empty')
+                else:
+                    payload = body
+                    process_individual_payload(payload)
             else:
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
