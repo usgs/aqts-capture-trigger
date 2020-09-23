@@ -49,9 +49,13 @@ def lambda_handler(event, context):
             else:
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
-                    raw_payload = {'Record': s3_record}
-                    payload = json.dumps(raw_payload)
-                    process_individual_payload(payload)
+                    s3_object_size = s3_record['s3']['object']['size']
+                    if int(s3_object_size) < 1200:
+                        logger.info(f'Omitted {s3_record} because it is probably empty')
+                    else:
+                        raw_payload = {'Record': s3_record}
+                        payload = json.dumps(raw_payload)
+                        process_individual_payload(payload)
         else:
             raise TypeError(f'Unsupported Event Source Found: {event_source}')
     return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
