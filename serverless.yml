@@ -143,7 +143,6 @@ resources:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
-  - serverless-pseudo-parameters
 
 package:
   exclude:
