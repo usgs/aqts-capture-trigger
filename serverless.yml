@@ -9,7 +9,7 @@ provider:
   timeout: 20
   logRetentionInDays: 90
   deploymentBucket:
-    name: iow-cloud-applications
+    name: ${opt:bucket, 'iow-cloud-applications'}
   stackTags:
     "wma:applicationId": "Aquarius TS Capture Trigger"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
@@ -20,11 +20,11 @@ provider:
 
 custom:
   exportGitVariables: false
-  accountNumber: ${ssm:/iow/aws/accountNumber}
   vpc:
     securityGroupIds: ${ssm:/iow/aqts-capture-trigger/${self:provider.stage}/securityGroupIds~split}
     subnetIds: ${ssm:/iow/aws/vpc/${self:provider.stage}/subnetIds~split}
   environments:
+    DEV: dev
     TEST: test
     QA: qa
     PROD-EXTERNAL: prod-external
@@ -32,11 +32,11 @@ custom:
 functions:
   aqtsCaptureTrigger:
     handler: trigger.handler.lambda_handler
-    role: arn:aws:iam::${self:custom.accountNumber}:role/csr-Lambda-Role
+    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
     onError:
       Ref: snsTopic
     events:
-      - sqs: arn:aws:sqs:${self:provider.region}:${self:custom.accountNumber}:aqts-capture-error-queue-${self:provider.stage}
+      - sqs: arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:aqts-capture-error-queue-${self:provider.stage}
       - sqs:
           arn:
             Fn::GetAtt:
@@ -44,7 +44,7 @@ functions:
               - Arn
     reservedConcurrency: 25
     environment:
-      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:${self:custom.accountNumber}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
     vpc: ${self:custom.vpc}
 
@@ -143,6 +143,7 @@ resources:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
+  - serverless-pseudo-parameters
 
 package:
   exclude:
