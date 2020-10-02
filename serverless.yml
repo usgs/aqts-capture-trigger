@@ -140,6 +140,13 @@ resources:
                 ArnLike:
                   aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName}
 
+
+Outputs:
+    Value:
+      Ref: triggerQueue
+    Export:
+      Name: triggerQueueName
+
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
