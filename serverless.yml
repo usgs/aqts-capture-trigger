@@ -168,16 +168,6 @@ resources:
                    aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketLoadTest.Properties.BucketName}
                   ]
 
-
-Outputs:
-  TriggerQueueArnId:
-    Value:
-      Fn::GetAtt:
-        - TriggerQueue
-        - Arn
-    Export:
-      Name: TriggerQueueArnId-${self:provider.stage}
-
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
