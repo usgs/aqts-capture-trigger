@@ -142,10 +142,13 @@ resources:
 
 
 Outputs:
+  TriggerQueueArnId:
     Value:
-      Ref: triggerQueue
+      Fn::GetAtt:
+        - TriggerQueue
+        - Arn
     Export:
-      Name: triggerQueueName
+      Name: TriggerQueueArnId-${self:provider.stage}
 
 plugins:
   - serverless-plugin-git-variables
