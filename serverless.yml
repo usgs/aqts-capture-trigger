@@ -163,10 +163,7 @@ resources:
                   - Arn
               Condition:
                 ArnLike:
-                  [
-                   aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName},
-                   aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketLoadTest.Properties.BucketName}
-                  ]
+                  aws:SourceArn: [arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName}, arn:aws:s3:*:*:${self:resources.Resources.S3BucketLoadTest.Properties.BucketName}]
 
 plugins:
   - serverless-plugin-git-variables
