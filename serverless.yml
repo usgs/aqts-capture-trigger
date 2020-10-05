@@ -115,6 +115,31 @@ resources:
                 Fn::GetAtt:
                   - triggerQueue
                   - Arn
+    S3BucketLoadTest:
+      Type: AWS::S3::Bucket
+      DependsOn:
+        - triggerQueue
+        - triggerQueuePolicy
+      Properties:
+        BucketName: iow-retriever-capture-load
+        AccessControl: Private
+        LifecycleConfiguration:
+          Rules:
+            - ExpirationInDays: 4
+              Status: Enabled
+        NotificationConfiguration:
+          QueueConfigurations:
+            - Event: s3:ObjectCreated:Put
+              Filter:
+                S3Key:
+                  Rules:
+                    - Name: suffix
+                      Value: .json
+              Queue:
+                Fn::GetAtt:
+                  - triggerQueue
+                  - Arn
+
     triggerQueue:
       Type: AWS::SQS::Queue
       Properties:
@@ -138,7 +163,10 @@ resources:
                   - Arn
               Condition:
                 ArnLike:
-                  aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName}
+                  [
+                   aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketTriggering.Properties.BucketName},
+                   aws:SourceArn: arn:aws:s3:*:*:${self:resources.Resources.S3BucketLoadTest.Properties.BucketName}
+                  ]
 
 
 Outputs:
