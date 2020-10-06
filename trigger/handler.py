@@ -19,6 +19,7 @@ def lambda_handler(event, context):
 
     state_machine_arn = os.getenv('STATE_MACHINE_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
+    deploy_stage = os.getenv('DEPLOY_STAGE', 'Unspecified')
     # limit the size of the s3 objects going to the step function
     # objects greater than ~150 MB seem to cause problems
     # value is specified in bytes
@@ -49,7 +50,7 @@ def lambda_handler(event, context):
             else:
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
-                    raw_payload = {'Record': s3_record}
+                    raw_payload = {'Record': s3_record, 'Stage': deploy_stage}
                     payload = json.dumps(raw_payload)
                     process_individual_payload(payload)
         else:

@@ -46,6 +46,7 @@ functions:
     environment:
       STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
+      DEPLOY_STAGE: ${self:provider.stage}
     vpc: ${self:custom.vpc}
 
 resources:
