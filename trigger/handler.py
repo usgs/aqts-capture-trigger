@@ -19,7 +19,7 @@ def lambda_handler(event, context):
 
     state_machine_arn = os.getenv('STATE_MACHINE_ARN')
     region = os.getenv('AWS_DEPLOYMENT_REGION')
-    deploy_stage = os.getenv('DEPLOY_STAGE')
+    deploy_stage = os.getenv('DEPLOY_STAGE', 'Unspecified')
     # limit the size of the s3 objects going to the step function
     # objects greater than ~150 MB seem to cause problems
     # value is specified in bytes
