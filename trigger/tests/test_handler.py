@@ -79,7 +79,7 @@ class TestLambdaHandler(TestCase):
         lambda_handler(self.sqs_event, self.context)
         mock_esm.assert_called_with(
             state_machine_arn=self.state_machine_arn,
-            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-17T12:39Z", "s3": {"object": {"size": 618}}}, "Stage": "Unspecified"}',
+            invocation_payload='{"Record": {"eventSource": "s3", "eventTime": "2020-02-17T12:39Z", "s3": {"object": {"size": 618}}}}',
             region=self.region
         )
 
