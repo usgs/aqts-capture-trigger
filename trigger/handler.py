@@ -2,11 +2,11 @@ import json
 import logging
 import os
 
-
 from .state_machine import execute_state_machine
 
+log_level = os.getenv('LOG_LEVEL', logging.ERROR)
 logger = logging.getLogger()
-logger.setLevel(logging.DEBUG)
+logger.setLevel(log_level)
 
 
 def serialize_datetime(dt):
@@ -22,7 +22,7 @@ def lambda_handler(event, context):
     # limit the size of the s3 objects going to the step function
     # objects greater than ~150 MB seem to cause problems
     # value is specified in bytes
-    s3_object_size_limit = int(os.getenv('OBJECT_SIZE_LIMIT', 10**9))
+    s3_object_size_limit = int(os.getenv('OBJECT_SIZE_LIMIT', 10 ** 9))
 
     responses = []
 
