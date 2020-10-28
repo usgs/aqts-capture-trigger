@@ -13,6 +13,9 @@ provider:
   stackTags:
     "wma:applicationId": "Aquarius TS Capture Trigger"
     "wma:contact": "Andrew Yan ayan@usgs.gov"
+    "wma:role": etl
+    "wma:system": NWIS
+    "wma:subSystem": NWISWeb-Capture
     "wma:environment": ${self:provider.stage}
     "wma:taggingVersion": 0.0.1
     "wma:costCenter": TBD
@@ -34,7 +37,11 @@ custom:
 functions:
   aqtsCaptureTrigger:
     handler: trigger.handler.lambda_handler
-    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
+    role:
+      Fn::Sub:
+        - "arn:aws:iam::${accountId}:role/csr-Lambda-Role"
+        - accountId:
+            Ref: "AWS::AccountId"
     onError:
       Ref: snsTopic
     events:
@@ -154,7 +161,6 @@ Outputs:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
-  - serverless-pseudo-parameters
 
 package:
   exclude:
