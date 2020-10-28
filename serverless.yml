@@ -37,15 +37,21 @@ custom:
 functions:
   aqtsCaptureTrigger:
     handler: trigger.handler.lambda_handler
-    role:
-      Fn::Sub:
-        - "arn:aws:iam::${accountId}:role/csr-Lambda-Role"
-        - accountId:
-            Ref: "AWS::AccountId"
+#    role:
+#      Fn::Sub:
+#        - "arn:aws:iam::${accountId}:role/csr-Lambda-Role"
+#        - accountId:
+#            Ref: "AWS::AccountId"
+    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
     onError:
       Ref: snsTopic
     events:
-      - sqs: arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:aqts-capture-error-queue-${self:provider.stage}
+      - sqs:
+        Fn::Sub:
+          - "sqs: arn:aws:sqs:${self:provider.region}:${accountId}:aqts-capture-error-queue-${self:provider.stage}"
+          - accountId:
+              Ref: "AWS::AccountId"
+#      - sqs: arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:aqts-capture-error-queue-${self:provider.stage}
       - sqs:
           arn:
             Fn::GetAtt:
@@ -53,7 +59,12 @@ functions:
               - Arn
     reservedConcurrency: 25
     environment:
-      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+      STATE_MACHINE_ARN:
+        Fn::Sub:
+          - "arn:aws:states:${self:provider.region}:${accountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}"
+          - accountId:
+              Ref: "AWS::AccountId"
+#      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       LOG_LEVEL: INFO
     vpc: ${self:custom.vpc}
@@ -125,7 +136,6 @@ resources:
                 Fn::GetAtt:
                   - triggerQueue
                   - Arn
-
     triggerQueue:
       Type: AWS::SQS::Queue
       Properties:
@@ -161,6 +171,7 @@ Outputs:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
+  - serverless-pseudo-parameters
 
 package:
   exclude:
