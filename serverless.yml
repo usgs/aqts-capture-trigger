@@ -37,7 +37,11 @@ custom:
 functions:
   aqtsCaptureTrigger:
     handler: trigger.handler.lambda_handler
-    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
+    role:
+      Fn::Sub:
+        - "arn:aws:iam::${accountId}:role/csr-Lambda-Role"
+        - accountId:
+            Ref: "AWS::AccountId"
     onError:
       Ref: snsTopic
     events:
@@ -157,7 +161,6 @@ Outputs:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
-  - serverless-pseudo-parameters
 
 package:
   exclude:
