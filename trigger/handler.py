@@ -49,9 +49,14 @@ def lambda_handler(event, context):
             else:
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
-                    raw_payload = {'Record': s3_record}
-                    payload = json.dumps(raw_payload)
-                    process_individual_payload(payload)
+                    s3_object_size = s3_record['s3']['object']['size']
+                    if int(s3_object_size) < s3_object_size_limit:
+                        raw_payload = {'Record': s3_record}
+                        payload = json.dumps(raw_payload)
+                        process_individual_payload(payload)
+                    # ignore giant s3 files for now
+                    else:
+                        logger.info(f'Omitted {s3_record} because it exceeded the set file size limit for loading.')
         else:
             raise TypeError(f'Unsupported Event Source Found: {event_source}')
     return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
