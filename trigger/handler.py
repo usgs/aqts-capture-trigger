@@ -59,7 +59,6 @@ def lambda_handler(event, context):
                         process_individual_payload(payload)
                     # put giant s3 files into the chopping queue
                     else:
-                        print("sending to chopper")
                         send_to_chopper(s3_record, region)
         else:
             raise TypeError(f'Unsupported Event Source Found: {event_source}')
