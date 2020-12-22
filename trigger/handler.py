@@ -2,6 +2,8 @@ import json
 import logging
 import os
 
+import boto3
+
 from .state_machine import execute_state_machine
 
 log_level = os.getenv('LOG_LEVEL', logging.ERROR)
@@ -50,13 +52,25 @@ def lambda_handler(event, context):
                 # handle things are coming through for the first time (i.e. they haven't failed before)
                 for s3_record in s3_record_list:
                     s3_object_size = s3_record['s3']['object']['size']
+                    print(f"object size {s3_object_size} limit {s3_object_size_limit}")
                     if int(s3_object_size) < s3_object_size_limit:
                         raw_payload = {'Record': s3_record}
                         payload = json.dumps(raw_payload)
                         process_individual_payload(payload)
-                    # ignore giant s3 files for now
+                    # put giant s3 files into the chopping queue
                     else:
-                        logger.info(f'Omitted {s3_record} because it exceeded the set file size limit for loading.')
+                        send_to_chopper(s3_record, region)
         else:
             raise TypeError(f'Unsupported Event Source Found: {event_source}')
     return json.loads(json.dumps({'Responses': responses}, default=serialize_datetime))
+
+
+def send_to_chopper(s3_record, region):
+    sqs = boto3.client('sqs', region_name=region)
+    chopping_queue = os.environ['AWS_CHOPPING_QUEUE_URL']
+    key = s3_record['s3']['object']['key']
+    sqs.send_message(
+        QueueUrl=chopping_queue,
+        MessageBody=key
+    )
+    logger.info(f'Putting giant file into chopping queue: {key}')
