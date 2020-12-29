@@ -62,10 +62,9 @@ functions:
     reservedConcurrency: 25
     environment:
       STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
-      AWS_CHOPPING_QUEUE_URL:
-        Ref: choppingQueue
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       OBJECT_SIZE_LIMIT: 150000000
+      STAGE: ${self:provider.stage}
       LOG_LEVEL: ERROR
 
 resources:

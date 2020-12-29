@@ -67,10 +67,13 @@ def lambda_handler(event, context):
 
 def send_to_chopper(s3_record, region):
     sqs = boto3.client('sqs', region_name=region)
-    chopping_queue = os.environ['AWS_CHOPPING_QUEUE_URL']
+    stage = os.getenv("STAGE")
+    queue_name = f"aqts-capture-chopping-queue-{stage}"
+    response = sqs.get_queue_url(QueueName=queue_name)
+    queue_url = response['QueueUrl']
     key = s3_record['s3']['object']['key']
     sqs.send_message(
-        QueueUrl=chopping_queue,
+        QueueUrl=queue_url,
         MessageBody=key
     )
     logger.info(f'Putting giant file into chopping queue: {key}')
