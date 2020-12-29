@@ -105,13 +105,13 @@ class TestLambdaHandler(TestCase):
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
     @mock.patch('trigger.handler.send_to_chopper', autospec=True)
     def test_giant_sqs_record(self, mock_stc, mock_esm):
-        mock_esm.return_value = {'spam': 'eggs', 'startDate': datetime.datetime(2020, 2, 18, 22, 00, 41)}
         mock_stc.return_value = None
         lambda_handler(self.sqs_giant_event, self.context)
         """
         Zero calls because the giant file has been thrown in the chopping queue
         """
-        self.assertEqual(mock_esm.call_count, 0)
+        mock_esm.assert_not_called()
+        mock_stc.assert_called_once()
 
     @mock.patch.dict('os.environ', {'STATE_MACHINE_ARN': state_machine_arn, 'AWS_DEPLOYMENT_REGION': region, 'OBJECT_SIZE_LIMIT': str(10**7)})
     @mock.patch('trigger.handler.execute_state_machine', autospec=True)
