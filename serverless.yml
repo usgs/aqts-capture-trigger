@@ -49,11 +49,24 @@ custom:
 functions:
   aqtsCaptureTrigger:
     handler: trigger.handler.lambda_handler
-    role: arn:aws:iam::#{AWS::AccountId}:role/csr-Lambda-Role
+    role:
+      Fn::Sub:
+        - arn:aws:iam::${accountId}:role/csr-Lambda-Role
+        - accountId:
+            Ref: AWS::AccountId
     onError:
       Ref: snsTopic
     events:
-      - sqs: arn:aws:sqs:${self:provider.region}:#{AWS::AccountId}:aqts-capture-error-queue-${self:provider.stage}
+      - sqs:
+          arn:
+            Fn::Join:
+              - ':'
+              - - arn
+                - aws
+                - sqs
+                - Ref: AWS::Region
+                - Ref: AWS::AccountId
+                - aqts-capture-error-queue-${self:provider.stage}
       - sqs:
           arn:
             Fn::GetAtt:
@@ -61,7 +74,11 @@ functions:
               - Arn
     reservedConcurrency: 25
     environment:
-      STATE_MACHINE_ARN: arn:aws:states:${self:provider.region}:#{AWS::AccountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+      STATE_MACHINE_ARN:
+        Fn::Sub:
+          - arn:aws:states:${self:provider.region}:${accountId}:stateMachine:aqts-capture-state-machine-${self:provider.stage}
+          - accountId:
+              Ref: AWS::AccountId
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       OBJECT_SIZE_LIMIT: 150000000
       STAGE: ${self:provider.stage}
@@ -174,7 +191,6 @@ Outputs:
 plugins:
   - serverless-plugin-git-variables
   - serverless-python-requirements
-  - serverless-pseudo-parameters
   - serverless-es-logs
 
 package:
