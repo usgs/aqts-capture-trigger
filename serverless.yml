@@ -82,7 +82,7 @@ functions:
       AWS_DEPLOYMENT_REGION: ${self:provider.region}
       OBJECT_SIZE_LIMIT: 150000000
       STAGE: ${self:provider.stage}
-      LOG_LEVEL: ERROR
+      LOG_LEVEL: DEBUG
 
 resources:
   Resources:
