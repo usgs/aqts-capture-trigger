@@ -6,6 +6,7 @@ pipeline {
             label 'team:iow'
         }
     }
+
     parameters {
         choice(choices: ['DEV', 'TEST', 'QA', 'PROD-EXTERNAL'], description: 'Deploy Stage (i.e. tier)', name: 'DEPLOY_STAGE')
     }
@@ -13,6 +14,13 @@ pipeline {
         pollSCM('H/5 * * * *')
     }
     stages {
+        stage('Set build description') {
+            steps {
+                script {
+                    currentBuild.description = "Deploy to ${env.DEPLOY_STAGE} tier"
+                }
+            }
+        }
         stage('run build the zip file for lambda') {
             agent {
                 dockerfile {
