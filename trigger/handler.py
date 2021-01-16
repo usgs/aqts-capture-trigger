@@ -4,7 +4,7 @@ import os
 
 import boto3
 
-from .state_machine import execute_state_machine
+from .state_machine import AwsStepFunction
 
 log_level = os.getenv('LOG_LEVEL', logging.ERROR)
 logger = logging.getLogger()
@@ -27,13 +27,10 @@ def lambda_handler(event, context):
     s3_object_size_limit = int(os.getenv('OBJECT_SIZE_LIMIT', 10 ** 9))
 
     responses = []
+    transform_sfn = AwsStepFunction(state_machine_arn, region)
 
     def process_individual_payload(individual_payload):
-        resp = execute_state_machine(
-            state_machine_arn=state_machine_arn,
-            invocation_payload=individual_payload,
-            region=region
-        )
+        resp = transform_sfn.start_execution(invocation_payload=individual_payload)
         responses.append(resp)
         logger.info(f'State Machine Response: {resp}')
 
