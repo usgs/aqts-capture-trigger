@@ -72,7 +72,7 @@ functions:
             Fn::GetAtt:
               - triggerQueue
               - Arn
-    reservedConcurrency: 10
+    reservedConcurrency: 8
     environment:
       STATE_MACHINE_ARN:
         Fn::Sub:
