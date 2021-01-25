@@ -67,9 +67,8 @@ def send_to_chopper(s3_record, region):
     queue_name = f"aqts-capture-chopping-queue-{stage}"
     response = sqs.get_queue_url(QueueName=queue_name)
     queue_url = response['QueueUrl']
-    key = s3_record['s3']['object']['key']
     sqs.send_message(
         QueueUrl=queue_url,
-        MessageBody=key
+        MessageBody=json.dumps(s3_record)
     )
-    logger.info(f'Putting giant file into chopping queue: {key}')
+    logger.info(f'Putting giant file into chopping queue: {json.dumps(s3_record)}')
